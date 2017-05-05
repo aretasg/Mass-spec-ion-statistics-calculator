@@ -7,9 +7,10 @@
 
 import argparse     #importing modules
 import re
+import matplotlib.pyplot as plt
 
 value_list = [] #a list of values in the specified range
-bins = {}
+bins = {} #a dictionary for counting accurances of m/z values in the specified window size
 seq_score_list = []  #a list of sequences that have pattern of interest 
 error_list = ['B', 'J', 'O', 'U', 'X', 'Z']  #letters not used to mark amino acids
 
@@ -120,8 +121,8 @@ elif args.mode == 'end':
 if args.mode and args.pattern and seq_score_list == []:  #prints a message if no sequences match the pattern of interest
     print ('NO MATCHES WITH THE PATTERN: ' + string(pattern_upper_case))    
     exit()              #and closes the program
-elif args.mode and args.pattern:  #select values in range in the pattern hit list
-    range_function(seq_score_list, start_point_range, end_point_range, value_list)   #
+elif args.mode and args.pattern:  #select values in the pattern hit list that are in range
+    range_function(seq_score_list, start_point_range, end_point_range, value_list)   #adds m/z values of pattern hits that are in the range
 else:
     range_function(data, start_point_range, end_point_range, value_list)  #adds m/z values in range to the value_list if no pattern was specified
 
@@ -134,33 +135,45 @@ if value_list == []:        ##Prints a warning message if there are no values in
 ####Sliding window
 sorted_list = sorted(value_list)  #sorts the value_list
 
-window_end = start_point_range + window_size
-window_start = window_end - window_size
+window_end = start_point_range + window_size    #the end point of the window
+window_start = window_end - window_size         #the start point of the window
 
-while window_end <= end_point_range:
-    for i in sorted_list:
-        if window_end not in bins.keys():
-            bins[window_end] = 0
-        if i >= window_start and i <= window_start:
+while window_end <= end_point_range:           #while the end of window is less or equals to the end point of the range
+    for i in sorted_list:                      #for every m/z value in the sorted list (value_list)
+        if window_end not in bins.keys():       #creates a key for the end position of the window in the bins dictionary
+            bins[window_end] = 0                #set the value of the key as zero
+        if i >= window_start and i <= window_start: #if the m/z value is in the position of the window; count the accurance
             bins[window_end] += 1
-    if args.parts_per_million:
-        step = float(args.parts_per_million) * m1 / 10**6
+    if args.parts_per_million:                              #if ppm was selected the step to move the window is counted appropratly
+        step = float(args.parts_per_million) * window_start / 10**6
         window_start += step
         window_end += step
-    elif Da and float(Da) <= window_size:
+    elif Da and float(Da) <= window_size:       #move the window based on accuracy provided in Daltons
         window_start += float(args.Da_accuracy)
         window_end += float(args.Da_accuracy)
-    elif float(Da) > window_size:          #Error catch
+    elif float(Da) > window_size:          #check if the window size is larger than the accuracy in Daltons
         print ('The mass accuracy (step) is larger than the window size!')
         exit()
 
-sorted_keys = sorted(bins.keys())
-for i in sorted_keys:
+sorted_keys = sorted(bins.keys()) #sort the bins dictionary by the key; from lowest to highest
+for i in sorted_keys:   #prints the results the the end point of window positions followed by the number of m/z values in that position
     print (i, bins[i])
 
-print ('With range from {0} to {1}, and selected window size {2}'.format(x, y, window_size))
-print ('There are {0} values in this range of mass/charge:'.format(len(s)))
+ ##prints some information about the input file; the pattern; accuracy selected
+print ('With range from {0} to {1}, and selected window size {2}'.format(start_point_range, end_point_range, window_size))
+print ('There are {0} values in this range of mass/charge:'.format(len(sorted_list)))
 if args.parts_per_million:
     print ('The ppm entered was {0}'.format(args.parts_per_million))
 elif Da:
     print ('The step entered in daltons was: {0}'.format(Da))
+    
+#creates plot and saves them in the working directory to allow graphical visualisation of the results
+
+plt.figure(1)
+plt.plot(list(bins.keys()), bins.values())
+plt.ylabel ("Abundance")
+plt.xlabel ("m/z")
+plt.title('MS_spectra for {0}'.format(data))
+#plt.show()
+plt.savefig('{0}_MS_spectra.png'.format(data))
+
