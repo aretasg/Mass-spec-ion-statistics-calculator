@@ -167,13 +167,17 @@ if args.parts_per_million:
 elif Da:
     print ('The step entered in daltons was: {0}'.format(Da))
     
-#creates plot and saves them in the working directory to allow graphical visualisation of the results
+#creates a plot and saves it in the working directory to allow graphical visualisation of the results
 
 plt.figure(1)
 plt.plot(list(bins.keys()), bins.values())
 plt.ylabel ("Abundance")
 plt.xlabel ("m/z")
-plt.title('MS_spectra for {0}'.format(data))
+if args.mode and args.pattern:
+    plt.title('MS_spectra for {0}; Sequence: {1}; {2}-{3} m/z'.format(data, pattern_upper_case, start_point_range, end_point_range))
+    plt.savefig('MS_spectra_{0}_seq{1}'.format(data, pattern_upper_case))
+else:
+    plt.title('MS_spectra for {0}; {1}-{2} m/z'.format(data, start_point_range, end_point_range))
+    plt.savefig('MS_spectra_{0}'.format(data))
 #plt.show()
-plt.savefig('{0}_MS_spectra.png'.format(data))
 
