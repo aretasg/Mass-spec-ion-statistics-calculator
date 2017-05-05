@@ -7,7 +7,7 @@
 
 import argparse     #importing modules
 import re
-import matplotlib.pyplot as plt
+import pylab
 
 value_list = [] #a list of values in the specified range
 bins = {} #a dictionary for counting accurances of m/z values in the specified window size
@@ -42,7 +42,7 @@ input_file = args.file      #a variable for the name of the input file
 
 #functions###
 def search_any(input_data, pattern): #a function to search data for patterns. Starting with/ending with or just containing them anywhere
-    print ('Peptide ions containing {0}:'.format(pattern)) #print message informing the specified pattern from CL
+    print ('Counting peptide ions containing the residue pattern: {0}'.format(pattern)) #print message informing the specified pattern from CL
     for line in input_data:             #iterates the input file
         line1 = line.rstrip("\n")        #removes the next line sign
         f = line1.split()            #splits the line
@@ -53,7 +53,7 @@ def search_any(input_data, pattern): #a function to search data for patterns. St
 
             
 def search_start(input_data, pattern): #a function to search data for sequences starting with the residues provided with -p
-    print ('Peptide ions starting with {0}:'.format(pattern))
+    print ('Counting peptide ions starting with {0}:'.format(pattern))
     for line in input_data:
         line1 = line.rstrip("\n")
         f = line1.split()
@@ -64,7 +64,7 @@ def search_start(input_data, pattern): #a function to search data for sequences 
 
 
 def search_end(input_data, pattern): #a funtion to search data for sequences ending with the residues provided with -p
-    print ('Peptide ions ending with {0}:'.format(pattern))
+    print ('Counting peptide ions ending with {0}:'.format(pattern))
     for line in input_data:
         line1 = line.rstrip("\n")
         f = line1.split()
@@ -91,14 +91,14 @@ if start_point_range < 0 or end_point_range < 0:  #check if the range value is n
     print ('m/z range values cannot be negative')
     exit()
     
-if float(starting_point_range) == 0 and args.parts_per_million:  #Checks if range starts with 0 when ppm accuracy is selected
+if float(start_point_range) == 0 and args.parts_per_million:  #Checks if range starts with 0 when ppm accuracy is selected
     print ('You cannot use range starting with 0 together with the ppm option! Try using a number close to null instead')
     exit()
 
 if args.mode and args.pattern:        #Checks if the pattern is sensible and can be used to search the data
     pattern_upper_case = args.pattern.upper() #makes pattern uppercase; so the user can type lower case in the CL
     for element in error_list:
-        match_res = re.search(r'{0}'.format(element), patern_upper_case)  #checks if the pattern has any letters not representing amino acids
+        match_res = re.search(r'{0}'.format(element), pattern_upper_case)  #checks if the pattern has any letters not representing amino acids
         match_res1 = re.search(r'[0-9]+', pattern_upper_case)  #checks if the pattern has any numbers (amino acids cannot be represented as numbers
     if match_res:                           #if the pattern has any letters in the error_list; displays the message 
          print('Please enter the correct residues. Amino acids are not represented by {0}'.format(error_list))
@@ -108,7 +108,7 @@ if args.mode and args.pattern:        #Checks if the pattern is sensible and can
          exit()
 
         
-#Depending on the preference speciefied in CLI, one out of three pattern search options are selected and
+#Depending on the preference specified in CLI, one out of three pattern search options are selected and
 #a respective function is called
 if args.mode == 'any': #checking the mode of search
     search_any(data, pattern_upper_case) #running a function search_any
@@ -142,10 +142,10 @@ while window_end <= end_point_range:           #while the end of window is less 
     for i in sorted_list:                      #for every m/z value in the sorted list (value_list)
         if window_end not in bins.keys():       #creates a key for the end position of the window in the bins dictionary
             bins[window_end] = 0                #set the value of the key as zero
-        if i >= window_start and i <= window_start: #if the m/z value is in the position of the window; count the accurance
+        if i >= window_start and i <= window_end: #if the m/z value is in the position of the window; count the occurence
             bins[window_end] += 1
-    if args.parts_per_million:                              #if ppm was selected the step to move the window is counted appropratly
-        step = float(args.parts_per_million) * window_start / 10**6
+    if args.parts_per_million:                              #if ppm was selected the step to move the window is counted appropriately
+        step = float(args.parts_per_million) * window_start / 10**6  #the step with the accuracy applied
         window_start += step
         window_end += step
     elif Da and float(Da) <= window_size:       #move the window based on accuracy provided in Daltons
@@ -160,24 +160,28 @@ for i in sorted_keys:   #prints the results the the end point of window position
     print (i, bins[i])
 
  ##prints some information about the input file; the pattern; accuracy selected
-print ('With range from {0} to {1}, and selected window size {2}'.format(start_point_range, end_point_range, window_size))
-print ('There are {0} values in this range of mass/charge:'.format(len(sorted_list)))
+print ('In the range from {0} to {1} m/z and window size {2};'.format(start_point_range, end_point_range, window_size))
+print ('There are {0} values in this range of mass/charge'.format(len(sorted_list)))
 if args.parts_per_million:
-    print ('The ppm entered was {0}'.format(args.parts_per_million))
+    print ('The parts per a million (ppm) accuracy entered was {0}'.format(args.parts_per_million))
 elif Da:
-    print ('The step entered in daltons was: {0}'.format(Da))
+    print ('The accuracy entered in Daltons was: {0}'.format(Da))
+if args.mode and args.pattern:
+    print ('The pattern entered was: {0}'.format(pattern_upper_case))
     
 #creates a plot and saves it in the working directory to allow graphical visualisation of the results
 
-plt.figure(1)
-plt.plot(list(bins.keys()), bins.values())
-plt.ylabel ("Abundance")
-plt.xlabel ("m/z")
+pylab.figure(1)
+pylab.bar(list(sorted(bins.keys())), bins.values(), width=0.1, linewidth=2,
+        edgecolor='black')
+pylab.ylabel ("Intensity, rel. units")
+pylab.xlabel ("m/z, Th")
+
 if args.mode and args.pattern:
-    plt.title('MS_spectra for {0}; Sequence: {1}; {2}-{3} m/z'.format(data, pattern_upper_case, start_point_range, end_point_range))
-    plt.savefig('MS_spectra_{0}_seq{1}'.format(data, pattern_upper_case))
+    pylab.title('MS_spectra for {0}; Sequence: {1}; {2}-{3} m/z'.format(input_file, pattern_upper_case, start_point_range, end_point_range))
+    pylab.savefig('MS_spectra_{0}_SEQ_{1}.png'.format(input_file, pattern_upper_case))
 else:
-    plt.title('MS_spectra for {0}; {1}-{2} m/z'.format(data, start_point_range, end_point_range))
-    plt.savefig('MS_spectra_{0}'.format(data))
+    pylab.title('MS_spectra for {0}; {1}-{2} m/z'.format(input_file, start_point_range, end_point_range))
+    pylab.savefig('MS_spectra_{0}.png'.format(input_file))
 #plt.show()
 
