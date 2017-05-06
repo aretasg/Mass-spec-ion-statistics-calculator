@@ -1,4 +1,4 @@
-# ion-statistics-calculator
+# Mass-spec-ion-statistics-calculator
 calculate the average number of m/z values found within a m/z range (and/or set of m/z bins) specified by the user from the command line;
 the script was written in Python 3 and should work with Python 2;
 the script accepts a file in fasta format as input to produce a PNG image file with MS spectra;
