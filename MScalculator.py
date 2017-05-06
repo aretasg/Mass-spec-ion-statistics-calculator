@@ -2,23 +2,28 @@
 # -*- coding: utf-8 -*-
 
 #PLEASE READ!!!!
-# arguments: -f for filename; -from -to for range; -ppm to provide accuracy in ppm; -Da for acuracy in daltons; -w for window_size; -m for mode of search; -p for pattern of interest
+#This script accepts a fasta format file as input to generate MS spectra by sliding a user-defined window
+#with the user-defined accuracy either in Daltons or parts per a million (ppm)
+#an example of a fasta file is provided as input_foo.fasta
+
+# arguments: -f for input filename; -from -to for range; -ppm to provide accuracy in ppm; -Da for acuracy in daltons;
+# -w for window_size; -m for mode of search; -p for pattern of interest
 # -m and -p are not required if there is no pattern of interest.
 
 import argparse     #importing modules
 import re
 import pylab
 
-value_list = [] #a list of values in the specified range
-bins = {} #a dictionary for counting accurances of m/z values in the specified window size
-seq_score_list = []  #a list of sequences that have pattern of interest 
+value_list = []     #a list of values in the specified range
+bins = {}           #a dictionary for counting accurances of m/z values in the specified window size
+seq_score_list = [] #a list of sequences that have pattern of interest 
 error_list = ['B', 'J', 'O', 'U', 'X', 'Z']  #letters not used to mark amino acids
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file',
-    help='chose the file', required = True)  #a flag to specify the input file
+    help='chose the file', required = True)         #a flag to specify the input file
 parser.add_argument('-from', '--from_range',
-    help='chose the range. From:', default = 1000) #a flag to specify the starting point of the range; default is 1000 m/z
+    help='chose the range. From:', default = 1000)  #a flag to specify the starting point of the range; default is 1000 m/z
 parser.add_argument('-to', '--to_range',
     help='chose the range. To:', default = 1500)    #a flag to specify the ending point of the range; default is 1500 m/z
 parser.add_argument('-ppm', '--parts_per_million',
@@ -26,33 +31,33 @@ parser.add_argument('-ppm', '--parts_per_million',
 parser.add_argument('-Da', '--Da_accuracy',
     help='enter the value for mass accuracy in Da', default = 0.2)  #a flag to specify accuracy in Daltons; default is 0.2 Da
 parser.add_argument('-w', '--window_size',
-    help='define the window size', required = True)  #a flag for window size for the sliding window
+    help='define the window size', required = True) #a flag for window size for the sliding window
 parser.add_argument('-m', '--mode',
     help='chose the mode of search [any, start, end]') #a flag for the type of pattern search to be performed
 parser.add_argument('-p', '--pattern',
-    help='define the pattern')  #a flag for the patern of interest to search e.g. CAGIY (one letter code for amino acid)
+    help='define the pattern')  #a flag for the pattern of interest to search e.g. CAGIY (one letter code for amino acid)
 
 
 args = parser.parse_args()
-window_size = float(args.window_size)  #a variable for the window size as provided from CL
+window_size = float(args.window_size)       #a variable for the window size as provided from CL
 start_point_range = float(args.from_range)  #a variable for the starting point of the range as provided from CL
-end_point_range = float(args.to_range)    #a variable for the ending point of the range as provided from CL
-Da = args.Da_accuracy       #a variable for the accuracy in Daltons as provided from CL
-input_file = args.file      #a variable for the name of the input file
+end_point_range = float(args.to_range)      #a variable for the ending point of the range as provided from CL
+Da = args.Da_accuracy                       #a variable for the accuracy in Daltons as provided from CL
+input_file = args.file                      #a variable for the name of the input file
 
 #functions###
 def search_any(input_data, pattern): #a function to search data for patterns. Starting with/ending with or just containing them anywhere
     print ('Counting peptide ions containing the residue pattern: {0}'.format(pattern)) #print message informing the specified pattern from CL
-    for line in input_data:             #iterates the input file
-        line1 = line.rstrip("\n")        #removes the next line sign
-        f = line1.split()            #splits the line
-        seq = f[5]              #save the fifth element/sequence of the line as variable seq
+    for line in input_data:                 #iterates the input file
+        line1 = line.rstrip("\n")           #removes the next line sign
+        f = line1.split()                   #splits the line
+        seq = f[5]                          #save the fifth element/sequence of the line as variable seq
         m_aa = re.search(r'{0}'.format(pattern), seq) #search for the pattern in the sequence and save it to variable m_aa
-        if m_aa:                        #if there is a hit 
-            seq_score_list.append(line1)  #add the sequence to the hit list
+        if m_aa:                            #if there is a hit 
+            seq_score_list.append(line1)    #add the sequence to the hit list
 
             
-def search_start(input_data, pattern): #a function to search data for sequences starting with the residues provided with -p
+def search_start(input_data, pattern):      #a function to search data for sequences starting with the residues provided with -p
     print ('Counting peptide ions starting with {0}:'.format(pattern))
     for line in input_data:
         line1 = line.rstrip("\n")
@@ -63,7 +68,7 @@ def search_start(input_data, pattern): #a function to search data for sequences 
             seq_score_list.append(line1)
 
 
-def search_end(input_data, pattern): #a funtion to search data for sequences ending with the residues provided with -p
+def search_end(input_data, pattern):        #a funtion to search data for sequences ending with the residues provided with -p
     print ('Counting peptide ions ending with {0}:'.format(pattern))
     for line in input_data:
         line1 = line.rstrip("\n")
@@ -74,17 +79,17 @@ def search_end(input_data, pattern): #a funtion to search data for sequences end
             seq_score_list.append(line1)
             
 def range_function(sequences, start_point, end_point, range_list):  #a function to iterate over the input; compare m/z values to a specified range (-form/-to)
-    for i in sequences:                    #iterate over the list containing sequences
+    for i in sequences:                     #iterate over the list containing sequences
         f = i.split()                       #split the line
-        seq = float(f[2])                     #save third element/ m/z value 
+        seq = float(f[2])                   #save third element/ m/z value 
         if seq >= start_point and seq <= end_point: #checks if the value is in the range
-            range_list.append(seq)      #adds the value to the list for m/z values in the specified range
+            range_list.append(seq)          #adds the value to the list for m/z values in the specified range
 
 #################end of functions
 try:                                        #attempts to open and read the input
     data = open(input_file).readlines()
 except IOError:
-    print ('Could not open file', input_file)  #Displays an error message if unsuccessfull
+    print ('Could not open file', input_file)   #Displays an error message if unsuccessfull
     exit()
 
 if start_point_range < 0 or end_point_range < 0:  #check if the range value is not negative; m/z values cannot be negative
@@ -95,15 +100,15 @@ if float(start_point_range) == 0 and args.parts_per_million:  #Checks if range s
     print ('You cannot use range starting with 0 together with the ppm option! Try using a number close to null instead')
     exit()
 
-if args.mode and args.pattern:        #Checks if the pattern is sensible and can be used to search the data
-    pattern_upper_case = args.pattern.upper() #makes pattern uppercase; so the user can type lower case in the CL
+if args.mode and args.pattern:                  #Checks if the pattern is sensible and can be used to search the data
+    pattern_upper_case = args.pattern.upper()   #makes pattern uppercase; so the user can type lower case in the CL
     for element in error_list:
         match_res = re.search(r'{0}'.format(element), pattern_upper_case)  #checks if the pattern has any letters not representing amino acids
         match_res1 = re.search(r'[0-9]+', pattern_upper_case)  #checks if the pattern has any numbers (amino acids cannot be represented as numbers
-    if match_res:                           #if the pattern has any letters in the error_list; displays the message 
+    if match_res:                               #if the pattern has any letters in the error_list; displays the message 
          print('Please enter the correct residues. Amino acids are not represented by {0}'.format(error_list))
          exit()
-    elif match_res1:  #displays the message if the patter contains any numbers
+    elif match_res1:                            #displays the message if the patter contains any numbers
          print('Residues cannot be represented by numbers!')
          exit()
 
@@ -138,25 +143,25 @@ sorted_list = sorted(value_list)  #sorts the value_list
 window_end = start_point_range + window_size    #the end point of the window
 window_start = window_end - window_size         #the start point of the window
 
-while window_end <= end_point_range:           #while the end of window is less or equals to the end point of the range
-    for i in sorted_list:                      #for every m/z value in the sorted list (value_list)
-        if window_end not in bins.keys():       #creates a key for the end position of the window in the bins dictionary
-            bins[window_end] = 0                #set the value of the key as zero
-        if i >= window_start and i <= window_end: #if the m/z value is in the position of the window; count the occurence
+while window_end <= end_point_range:                #while the end of window is less or equals to the end point of the range
+    for i in sorted_list:                           #for every m/z value in the sorted list (value_list)
+        if window_end not in bins.keys():           #creates a key for the end position of the window in the bins dictionary
+            bins[window_end] = 0                    #set the value of the key as zero
+        if i >= window_start and i <= window_end:   #if the m/z value is in the position of the window; count the occurence
             bins[window_end] += 1
-    if args.parts_per_million:                              #if ppm was selected the step to move the window is counted appropriately
+    if args.parts_per_million:                      #if ppm was selected the step to move the window is counted appropriately
         step = float(args.parts_per_million) * window_start / 10**6  #the step with the accuracy applied
         window_start += step
         window_end += step
-    elif Da and float(Da) <= window_size:       #move the window based on accuracy provided in Daltons
+    elif Da and float(Da) <= window_size:           #move the window based on accuracy provided in Daltons
         window_start += float(args.Da_accuracy)
         window_end += float(args.Da_accuracy)
-    elif float(Da) > window_size:          #check if the window size is larger than the accuracy in Daltons
+    elif float(Da) > window_size:                   #check if the window size is larger than the accuracy in Daltons
         print ('The mass accuracy (step) is larger than the window size!')
         exit()
 
 sorted_keys = sorted(bins.keys()) #sort the bins dictionary by the key; from lowest to highest
-for i in sorted_keys:   #prints the results the the end point of window positions followed by the number of m/z values in that position
+for i in sorted_keys:             #prints the results the the end point of window positions followed by the number of m/z values in that position
     print (i, bins[i])
 
  ##prints some information about the input file; the pattern; accuracy selected
