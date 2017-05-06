@@ -48,35 +48,38 @@ input_file = args.file                      #a variable for the name of the inpu
 #functions###
 def search_any(input_data, pattern): #a function to search data for patterns. Starting with/ending with or just containing them anywhere
     print ('Counting peptide ions containing the residue pattern: {0}'.format(pattern)) #print message informing the specified pattern from CL
-    for line in input_data:                 #iterates the input file
-        line1 = line.rstrip("\n")           #removes the next line sign
-        f = line1.split()                   #splits the line
-        seq = f[5]                          #save the fifth element/sequence of the line as variable seq
-        m_aa = re.search(r'{0}'.format(pattern), seq) #search for the pattern in the sequence and save it to variable m_aa
-        if m_aa:                            #if there is a hit 
-            seq_score_list.append(line1)    #add the sequence to the hit list
+    for line in input_data:                     #iterates the input file
+        if line.startswith(">"):
+            line1 = line.rstrip("\n")           #removes the next line sign
+            f = line1.split()                   #splits the line
+            seq = f[5]                          #save the fifth element/sequence of the line as variable seq
+            m_aa = re.search(r'{0}'.format(pattern), seq) #search for the pattern in the sequence and save it to variable m_aa
+            if m_aa:                            #if there is a hit 
+                seq_score_list.append(line1)    #add the sequence to the hit list
 
             
 def search_start(input_data, pattern):      #a function to search data for sequences starting with the residues provided with -p
     print ('Counting peptide ions starting with {0}:'.format(pattern))
     for line in input_data:
-        line1 = line.rstrip("\n")
-        f = line1.split()
-        seq = f[5]
-        m_aa = re.search(r'^{0}'.format(pattern), seq)  #looks for the sequences starting with the given pattern
-        if m_aa:
-            seq_score_list.append(line1)
+        if line.startswith(">"):
+            line1 = line.rstrip("\n")
+            f = line1.split()
+            seq = f[5]
+            m_aa = re.search(r'^{0}'.format(pattern), seq)  #looks for the sequences starting with the given pattern
+            if m_aa:
+                seq_score_list.append(line1)
 
 
 def search_end(input_data, pattern):        #a funtion to search data for sequences ending with the residues provided with -p
     print ('Counting peptide ions ending with {0}:'.format(pattern))
     for line in input_data:
-        line1 = line.rstrip("\n")
-        f = line1.split()
-        seq = f[5]
-        m_aa = re.search(r'{0}$'.format(pattern), line)  #looks for the sequences ending with the given pattern
-        if m_aa:
-            seq_score_list.append(line1)
+        if line.startswith(">"):
+            line1 = line.rstrip("\n")
+            f = line1.split()
+            seq = f[5]
+            m_aa = re.search(r'{0}$'.format(pattern), line)  #looks for the sequences ending with the given pattern
+            if m_aa:
+                seq_score_list.append(line1)
             
 def range_function(sequences, start_point, end_point, range_list):  #a function to iterate over the input; compare m/z values to a specified range (-form/-to)
     for i in sequences:                     #iterate over the list containing sequences
