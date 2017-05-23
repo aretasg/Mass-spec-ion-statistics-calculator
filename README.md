@@ -6,7 +6,7 @@ The script was written in Python 3 and should work with Python 2;
 
 The script accepts a file in fasta format as input to produce a PNG image file with MS spectra;
 
-The script works by specifying the m/z range for the values to be displayed; default = [1000-1500];
+The script works by specifying the m/z range for the values to be displayed: default = [1000-1500];
 
 The script allows to search for sequences with the residue sequence pattern of interest and displays the spectra;
 
