@@ -1,6 +1,6 @@
 # Mass-spec-ion-statistics-calculator
 
-Calculate the average number of m/z values found within a m/z range (and/or set of m/z bins) specified by the user from the command line;
+Calculate the average number of m/z values found within a specified m/z range (and/or set of m/z bins) specified by the user from the command line and produce visual MS spectra PNG file;
 
 The script was written in Python 3 and should work with Python 2;
 
