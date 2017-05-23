@@ -148,7 +148,6 @@ if args.mode and args.pattern and seq_score_list == []: #prints a message if no 
 elif args.mode and args.pattern:                        #make the pattern scoring sequence value list equals to the value_list
     value_list = seq_score_list                         #value_list will be used for sliding window mechanism
 
-
 if value_list == []:        #Prints a warning message if there are no values in the m/z range specified and exits the program
     print ('No values in the given mass range!')
     exit()
