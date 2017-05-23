@@ -108,7 +108,7 @@ if start_point_range < 0 or end_point_range < 0:#check if the range value is not
     
 if float(start_point_range) == 0 and args.parts_per_million:  #Checks if range starts with 0 when ppm accuracy is selected
     print ('''You cannot use range starting with 0 together with the ppm option! 
-    Try using a number close to null instead''')
+        Try using a number close to null instead''')
     exit()
 
 if args.mode and args.pattern:                  #Checks if the pattern is sensible and can be used to search the data
@@ -156,8 +156,8 @@ if value_list == []:        #Prints a warning message if there are no values in 
 by the end of this line the value_list should contain all the m/z values in the 
 specified range if the pattern of interest was entered the value list will only 
 contains m/z values which do have the pattern and fall in the range specified;
-Next starts the sorting of value in to the bins for graphical visualisaiton of 
-the spectra using the sliding window mechanism
+Next starts the sorting of value in to the bins for graphical visualisaton of 
+the MS spectra using the sliding window mechanism.
 '''
 
 ###Sliding window and sorting m/z value 
@@ -218,5 +218,3 @@ else:
     pylab.title('MS_spectra for {0}; {1}-{2} m/z'.format(input_file, 
                 start_point_range, end_point_range))
     pylab.savefig('MS_spectra_{0}.png'.format(input_file))
-#plt.show()
-
