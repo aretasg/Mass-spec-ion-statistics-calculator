@@ -33,7 +33,7 @@ parser.add_argument('-to', '--to_range',
 parser.add_argument('-ppm', '--parts_per_million',
     help='enter the value for ppm')                 #a flag to specify accuracy as parts per a million
 parser.add_argument('-Da', '--Da_accuracy',
-    help='enter the value for mass accuracy in Da', default = 0.5)  #a flag to specify accuracy in Daltons; default is 0.2 Da
+    help='enter the value for mass accuracy in Da', default = 0.2)  #a flag to specify accuracy in Daltons; default is 0.2 Da
 parser.add_argument('-w', '--window_size',
     help='define the window size', required = True) #a flag for window size for the sliding window
 parser.add_argument('-m', '--mode',
